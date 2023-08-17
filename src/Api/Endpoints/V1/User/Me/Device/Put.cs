@@ -1,23 +1,24 @@
+using Api.Infrastructure.Context;
 using Api.Infrastructure.Contract;
 using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Endpoints.V1.User.Device;
+namespace Api.Endpoints.V1.User.Me.Device;
 
 public class Put : IEndpoint
 {
     private static async Task<IResult> Handler(
-        [FromRoute] string id,
         [FromRoute] string deviceId,
-        [FromBody] UserDevicePutRequest request,
+        [FromServices] IApiContext apiContext,
+        [FromBody] UserMeDevicePutRequest request,
         [FromServices] IUserDeviceRepository userDeviceRepository,
         CancellationToken cancellationToken)
     {
-        var userDevice = await userDeviceRepository.GetUserDeviceAsync(id, deviceId, cancellationToken) ?? new UserDeviceEntity
+        var userDevice = await userDeviceRepository.GetUserDeviceAsync(apiContext.CurrentUserId, deviceId, cancellationToken) ?? new UserDeviceEntity
         {
             Id = deviceId,
-            UserId = id
+            UserId = apiContext.CurrentUserId
         };
 
         userDevice.Platform = request.Platform;
@@ -28,7 +29,7 @@ public class Put : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/v1/users/{id}/device/{deviceId}", Handler)
+        endpoints.MapPut("/v1/users/me/device/{deviceId}", Handler)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
@@ -36,7 +37,7 @@ public class Put : IEndpoint
     }
 }
 
-public class UserDevicePutRequest
+public class UserMeDevicePutRequest
 {
     public string? Platform { get; set; }
     public Dictionary<string, string> AdditionalData { get; set; } = new();

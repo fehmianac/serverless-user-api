@@ -28,7 +28,7 @@ public class GetPaged : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("v1/users/{id}", Handler)
+        endpoints.MapGet("v1/users/{id}/devices", Handler)
             .Produces<PagedResponse<UserDeviceDto>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status403Forbidden)

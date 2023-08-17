@@ -24,9 +24,17 @@ public class UserRepository : DynamoRepository, IUserRepository
         return await base.SaveAsync(entity, cancellationToken);
     }
 
-    public async Task<(IList<UserEntity> users, string nextToken)> GetPagedAsync(string userId, int limit, string? nextToken, CancellationToken cancellationToken)
+    public async Task<(IList<UserEntity> users, string nextToken)> GetPagedAsync(int limit, string? nextToken, CancellationToken cancellationToken)
     {
         var (users, token, _) = await GetPagedAsync<UserEntity>($"users", nextToken, limit, cancellationToken);
         return (users, token);
+    }
+
+    public async Task<IList<UserEntity>> GetUsersAsync(IList<string> userIds, CancellationToken cancellationToken)
+    {
+        return await BatchGetAsync(userIds.Select(q => new UserEntity
+        {
+            Id = q
+        }).ToList(), cancellationToken);
     }
 }

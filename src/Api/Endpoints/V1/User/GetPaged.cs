@@ -9,14 +9,26 @@ namespace Api.Endpoints.V1.User;
 public class GetPaged : IEndpoint
 {
     private static async Task<IResult> Handler(
+        [FromQuery] string? ids,
         [FromQuery] int limit,
         [FromQuery] string? nextToken,
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         CancellationToken cancellationToken)
     {
-        var userId = apiContext.CurrentUserId;
-        var (users, token) = await userRepository.GetPagedAsync(userId, limit, nextToken, cancellationToken);
+        if (!string.IsNullOrEmpty(ids))
+        {
+            var foundUsers = await userRepository.GetUsersAsync(ids.Split(','), cancellationToken);
+            return Results.Ok(new PagedResponse<UserDto>
+            {
+                Data = foundUsers.Select(q => q.ToDto()).ToList(),
+                Limit = limit,
+                NextToken = null,
+                PreviousToken = nextToken
+            });
+        }
+
+        var (users, token) = await userRepository.GetPagedAsync(limit, nextToken, cancellationToken);
         if (!users.Any())
         {
             return Results.Ok(new PagedResponse<UserDto>
