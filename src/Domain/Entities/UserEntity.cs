@@ -24,4 +24,5 @@ public class UserEntity : IEntity
     [JsonPropertyName("createdAt")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [JsonPropertyName("updatedAt")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     [JsonPropertyName("additionalData")] public Dictionary<string, string> AdditionalData { get; set; } = new();
+    [JsonPropertyName("settingsData")] public Dictionary<string, string> SettingsData { get; set; } = new();
 }

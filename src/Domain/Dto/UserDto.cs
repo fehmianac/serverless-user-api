@@ -21,6 +21,7 @@ public class UserDto
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public Dictionary<string, string> AdditionalData { get; set; } = new();
+    public Dictionary<string, string> SettingsData { get; set; } = new();
 }
 
 public static class UserDtoMapper
@@ -68,6 +69,7 @@ public static class UserDtoMapper
             Status = entity.Status,
             IsVerified = entity.IsVerified,
             AdditionalData = entity.AdditionalData,
+            SettingsData = entity.SettingsData,
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt,
         };

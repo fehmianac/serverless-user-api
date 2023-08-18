@@ -36,6 +36,7 @@ public class Put : IEndpoint
             Gender = request.Gender,
             BirthDate = request.BirthDate,
             AdditionalData = request.AdditionalData,
+            SettingsData = request.SettingsData,
             DefaultLanguage = request.DefaultLanguage,
             FirstName = request.FirstName,
             AvatarUrl = request.AvatarUrl,
@@ -168,6 +169,7 @@ public class UserPutRequest
     public bool IsVerified { get; set; }
     public string? DefaultLanguage { get; set; }
     public Dictionary<string, string> AdditionalData { get; set; } = new();
+    public Dictionary<string, string> SettingsData { get; set; } = new();
 
     public class UserPutRequestValidator : AbstractValidator<UserPutRequest>
     {
