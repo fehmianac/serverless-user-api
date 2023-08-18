@@ -28,6 +28,7 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddScoped<IApiContext, ApiContext>();
+builder.Services.AddScoped<ILookupRepository, LookupRepository>();
 builder.Services.AddScoped<IOtpCodeRepository, OtpCodeRepository>();
 builder.Services.AddScoped<IUniqueKeyRepository, UniqueKeyRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -46,7 +47,6 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 builder.Services.AddDefaultAWSOptions(new AWSOptions
 {
     Profile = "serverless",
-    Region = RegionEndpoint.EUCentral1
 });
 
 var app = builder.Build();
