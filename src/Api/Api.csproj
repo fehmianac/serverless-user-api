@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="5.1.0" />
         <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
         <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.6.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />

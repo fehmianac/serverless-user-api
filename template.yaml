@@ -18,7 +18,7 @@ Resources:
       Name: serverless-user-api
       Description: User App API
       EndpointConfiguration:
-          Types:
+        Types:
           - REGIONAL
 
   ProxyRoute:
@@ -27,7 +27,7 @@ Resources:
       RestApiId: !Ref UserApi
       ParentId: !GetAtt UserApi.RootResourceId
       PathPart: '{proxy+}'
-    
+  
   ProxyRouteAnyMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -39,17 +39,16 @@ Resources:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserApiLambdaFunction.Arn}/invocations
-          
-
+  
+  
   Deployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       - ProxyRouteAnyMethod
     Properties:
-        RestApiId: !Ref UserApi
-        StageName: Prod
-
-
+      RestApiId: !Ref UserApi
+      StageName: Prod
+  
   UserApiTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -134,6 +133,39 @@ Resources:
                 Action:
                   - sqs:*
                 Resource: arn:aws:sqs:*:*:*
+        - PolicyName: UserApiLambdaSNSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:*
+                Resource: arn:aws:sns:*:*:*
+        - PolicyName: allowParameterStore
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParametersByPath
+                Resource: '*'
+  
+  UserApiEventBus:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: UserApiEventBus
+  
+  
+  UserApiEventBusParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /user-api/EventBusSettings
+      Type: String
+      Value: !Join [ '', [ '{"IsEnabled":true,"TopicArn":"',!Ref UserApiEventBus,'"}' ] ]
+      Description: JWT
+
+
 Outputs:
   UserApiURI:
     Description: "The Rest URI to connect to"

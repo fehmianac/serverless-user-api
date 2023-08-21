@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.103.20" />
+        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.200.21" />
         <PackageReference Include="AWSSDK.SQS" Version="3.7.103.4" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     </ItemGroup>
