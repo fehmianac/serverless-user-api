@@ -13,42 +13,50 @@ Parameters:
 
 Resources:
   UserApi:
-    Type: AWS::ApiGateway::RestApi
+    Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: serverless-user-api
-      Description: User App API
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
+      Name: user-api
+      ProtocolType: HTTP
 
   ProxyRoute:
-    Type: AWS::ApiGateway::Resource
+    Type: AWS::ApiGatewayV2::Route
     Properties:
-      RestApiId: !Ref UserApi
-      ParentId: !GetAtt UserApi.RootResourceId
-      PathPart: '{proxy+}'
+      ApiId: !Ref UserApi
+      RouteKey: 'ANY /{proxy+}'
+      AuthorizationType: NONE
+      OperationName: ApiEndpoints
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref ProxyRouteAnyMethod
   
   ProxyRouteAnyMethod:
-    Type: AWS::ApiGateway::Method
+    Type: AWS::ApiGatewayV2::Integration
     Properties:
-      RestApiId: !Ref UserApi
-      ResourceId: !Ref ProxyRoute
-      AuthorizationType: NONE
-      HttpMethod: ANY
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserApiLambdaFunction.Arn}/invocations
+      ApiId: !Ref UserApi
+      PayloadFormatVersion: '2.0'
+      Description: ProxyRoute Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserApiLambdaFunction.Arn}/invocations
   
   
   Deployment:
-    Type: AWS::ApiGateway::Deployment
+    Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
-      - ProxyRouteAnyMethod
+      - ProxyRoute
     Properties:
-      RestApiId: !Ref UserApi
-      StageName: Prod
-  
+      ApiId: !Ref UserApi
+      
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: prod
+      Description: Prod Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref UserApi
+      
   UserApiTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -86,7 +94,13 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: users
-
+            
+  UserApiLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/UserApiLambdaFunction"
+      RetentionInDays: 14
+      
   UserApiLambdaFunctionPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -156,7 +170,6 @@ Resources:
     Properties:
       TopicName: UserApiEventBus
   
-  
   UserApiEventBusParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -165,6 +178,13 @@ Resources:
       Value: !Join [ '', [ '{"IsEnabled":true,"TopicArn":"',!Ref UserApiEventBus,'"}' ] ]
       Description: JWT
 
+  UserApiApiKey:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /user-api/ApiKeyValidationSettings
+      Type: String
+      Value: !Join [ '', [ '{"IsEnabled":false,"HeaderName":"x-api-key","WhiteList":["/swagger"],"ApiKey":"',!Ref AWS::StackId,'"}' ] ]
+      Description: UserApiKeyValidationSettings
 
 Outputs:
   UserApiURI:

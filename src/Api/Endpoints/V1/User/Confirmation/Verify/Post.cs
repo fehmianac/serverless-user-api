@@ -30,7 +30,7 @@ public class Post : IEndpoint
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var isValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, key, request.KeyType, cancellationToken);
+        var isValid = key != null && await otpCodeRepository.CheckOtpCodeAsync(request.Code, key, request.KeyType, cancellationToken);
 
         if (!isValid)
         {

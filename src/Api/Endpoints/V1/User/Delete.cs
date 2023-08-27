@@ -1,6 +1,7 @@
 using Api.Infrastructure.Contract;
 using Domain.Enums;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User;
@@ -12,6 +13,7 @@ public class Delete : IEndpoint
         [FromServices] IUserDeviceRepository userDeviceRepository,
         [FromServices] IUniqueKeyRepository uniqueKeyRepository,
         [FromServices] IVerifyLogRepository verifyLogRepository,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(id, cancellationToken);
@@ -38,14 +40,14 @@ public class Delete : IEndpoint
 
         await userDeviceRepository.DeleteUserDevicesAsync(id, cancellationToken);
         await verifyLogRepository.DeleteUserVerifyLogsAsync(id, cancellationToken);
-
-        return Results.Ok();
+        await eventBusManager.UserDeletedAsync(id, cancellationToken);
+        return Results.NoContent();
     }
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapDelete("/v1/users/{id}", Handler)
-            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
             .WithTags("User");
