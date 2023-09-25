@@ -41,7 +41,7 @@ public class Put : IEndpoint
             FirstName = request.FirstName,
             AvatarUrl = request.AvatarUrl,
             LastName = request.LastName,
-            IsVerified = request.IsVerified,
+            IsVerified = false,
             UserName = request.UserName,
             Phone = request.Phone,
             Status = request.Status,
@@ -59,7 +59,12 @@ public class Put : IEndpoint
             var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.Phone, user.Phone, cancellationToken);
             if (!check)
             {
-                return Results.BadRequest("Phone number already exists");
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    {
+                        "Phone", new[] {"Phone already exists"}
+                    }
+                });
             }
         }
 
@@ -68,7 +73,12 @@ public class Put : IEndpoint
             var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.Email, user.Email, cancellationToken);
             if (!check)
             {
-                return Results.BadRequest("Email already exists");
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    {
+                        "Email", new[] {"Email already exists"}
+                    }
+                });
             }
         }
 
@@ -77,7 +87,12 @@ public class Put : IEndpoint
             var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.UserName, user.UserName, cancellationToken);
             if (!check)
             {
-                return Results.BadRequest("UserName already exists");
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    {
+                        "UserName", new[] {"UserName already exists"}
+                    }
+                });
             }
         }
 

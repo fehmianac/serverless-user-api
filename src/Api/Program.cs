@@ -1,5 +1,6 @@
 using Amazon.DynamoDBv2;
 using Amazon.Extensions.Configuration.SystemsManager;
+using Amazon.Rekognition;
 using Amazon.SimpleNotificationService;
 using Api.Extensions;
 using Api.Infrastructure.Context;
@@ -36,6 +37,7 @@ builder.Services.Configure<UniqueKeySettings>(builder.Configuration.GetSection("
 builder.Services.Configure<UserVerificationSettings>(builder.Configuration.GetSection("UserVerificationSettings"));
 builder.Services.Configure<EventBusSettings>(builder.Configuration.GetSection("EventBusSettings"));
 builder.Services.Configure<ApiKeyValidationSettings>(builder.Configuration.GetSection("ApiKeyValidationSettings"));
+builder.Services.Configure<VerificationS3Settings>(builder.Configuration.GetSection("VerificationS3Settings"));
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -57,18 +59,23 @@ builder.Services.AddScoped<IOtpCodeRepository, OtpCodeRepository>();
 builder.Services.AddScoped<IUniqueKeyRepository, UniqueKeyRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVerifyLogRepository, VerifyLogRepository>();
+builder.Services.AddScoped<IReasonRepository, ReasonRepository>();
 builder.Services.AddScoped<ISmsProvider, DummySmsProvider>();
 builder.Services.AddScoped<IMailProvider, DummyEmailProvider>();
 builder.Services.AddScoped<IUserVerificationService, UserVerificationService>();
+builder.Services.AddScoped<IUserIdentityVerificationService, UserIdentityVerificationService>();
 builder.Services.AddScoped<ApiKeyValidatorMiddleware>();
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 builder.Services.AddAWSService<IAmazonDynamoDB>();
 builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
+builder.Services.AddAWSService<IAmazonRekognition>();
 builder.Services.AddAWSLambdaHosting(Environment.GetEnvironmentVariable("ApiGatewayType") == "RestApi" ? LambdaEventSource.RestApi : LambdaEventSource.HttpApi);
+
 var option = builder.Configuration.GetAWSOptions();
 builder.Services.AddDefaultAWSOptions(option);
 
@@ -85,6 +92,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context => await Results.Problem().ExecuteAsync(context)));
 }
+
 app.UseMiddleware<ApiKeyValidatorMiddleware>();
 
 app.MapEndpointsCore(AppDomain.CurrentDomain.GetAssemblies());

@@ -48,7 +48,7 @@ Resources:
       - ProxyRoute
     Properties:
       ApiId: !Ref UserApi
-      
+  
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
@@ -56,7 +56,7 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref UserApi
-      
+  
   UserApiTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -94,13 +94,13 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: users
-            
+  
   UserApiLambdaFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/UserApiLambdaFunction"
       RetentionInDays: 14
-      
+  
   UserApiLambdaFunctionPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -164,6 +164,25 @@ Resources:
                   - ssm:GetParameter
                   - ssm:GetParametersByPath
                 Resource: '*'
+                
+        - PolicyName: allowS3AsAdmin
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource: '*'
+                
+        - PolicyName: allowRekognition
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rekognition:CompareFaces
+                  - rekognition:DetectLabels
+                Resource: '*'      
   
   UserApiEventBus:
     Type: AWS::SNS::Topic
@@ -186,6 +205,15 @@ Resources:
       Value: !Join [ '', [ '{"IsEnabled":false,"HeaderName":"x-api-key","WhiteList":["/swagger"],"ApiKey":"',!Ref AWS::StackId,'"}' ] ]
       Description: UserApiKeyValidationSettings
 
+  UserApiVerificationS3SettingsParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /user-api/VerificationS3Settings
+      Type: String
+      Value: '{"BucketName":"aws-websockets-adaptor","MinConfidence":77}'
+      Description: VerificationS3Settings
+      
+      
 Outputs:
   UserApiURI:
     Description: "The Rest URI to connect to"
