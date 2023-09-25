@@ -30,7 +30,7 @@ public class Post : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("user/v1/verification", Handler)
+        endpoints.MapPost("/v1/verification/identity", Handler)
             .Produces<UserIdentityVerifyResponse>()
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)

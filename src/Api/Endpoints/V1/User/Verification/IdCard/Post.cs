@@ -23,7 +23,11 @@ public class Post : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("user/v1/verification/id-card/check", Handler);
+        endpoints.MapPost("/v1/verification/id-card/check", Handler)
+            .Produces<CheckIdCardResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError)
+            .WithTags("User");
     }
 
     public class CheckIdCardRequest
