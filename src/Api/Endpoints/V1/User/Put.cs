@@ -32,7 +32,7 @@ public class Put : IEndpoint
         var isRegisterState = user == null;
         user = new UserEntity
         {
-            Email = request.Email,
+            Email = request.Email?.ToLower(),
             Gender = request.Gender,
             BirthDate = request.BirthDate,
             AdditionalData = request.AdditionalData,

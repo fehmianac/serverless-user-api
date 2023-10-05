@@ -9,6 +9,7 @@ public class Get : IEndpoint
 {
     private static async Task<IResult> Handler([FromQuery] string email, [FromServices] IUniqueKeyRepository uniqueKeyRepository, CancellationToken cancellationToken)
     {
+        email = email.ToLower();
         var isExist = await uniqueKeyRepository.GetAsync(email, UniqueKeyType.Email, cancellationToken) != null;
         return Results.Ok(isExist);
     }

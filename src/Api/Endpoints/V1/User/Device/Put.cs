@@ -1,6 +1,7 @@
 using Api.Infrastructure.Contract;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User.Device;
@@ -12,6 +13,7 @@ public class Put : IEndpoint
         [FromRoute] string deviceId,
         [FromBody] UserDevicePutRequest request,
         [FromServices] IUserDeviceRepository userDeviceRepository,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var userDevice = await userDeviceRepository.GetUserDeviceAsync(id, deviceId, cancellationToken) ?? new UserDeviceEntity

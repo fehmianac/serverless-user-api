@@ -14,6 +14,7 @@ public class UserVerificationService : IUserVerificationService
     private readonly IMailProvider _mailProvider;
     private readonly IOtpCodeRepository _otpCodeRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IEventBusManager _eventBusManager;
     private readonly IOptionsSnapshot<UserVerificationSettings> _userVerificationSettingsOptions;
 
     public UserVerificationService(
@@ -21,6 +22,7 @@ public class UserVerificationService : IUserVerificationService
         IMailProvider mailProvider,
         IOtpCodeRepository otpCodeRepository,
         IUserRepository userRepository,
+        IEventBusManager eventBusManager,
         IOptionsSnapshot<UserVerificationSettings> userVerificationSettingsOptions)
     {
         _smsProvider = smsProvider;
@@ -28,6 +30,7 @@ public class UserVerificationService : IUserVerificationService
         _otpCodeRepository = otpCodeRepository;
         _userRepository = userRepository;
         _userVerificationSettingsOptions = userVerificationSettingsOptions;
+        _eventBusManager = eventBusManager;
     }
 
     public async Task<bool> SendVerificationCodeAsync(string userId, CancellationToken cancellationToken)
@@ -87,7 +90,10 @@ public class UserVerificationService : IUserVerificationService
             UserId = user.Id
         }, cancellationToken);
         if (user.Email != null)
+        {
             await _mailProvider.SendMailAsync(user.Email, "Subject", $"VerificationCode: {emilCode}", cancellationToken);
+            await _eventBusManager.EmailValidationOtpRequestAsync(user.Id, emilCode, cancellationToken);
+        }
     }
 
     private async Task SendSmsOtpCodeAsync(UserEntity user, DateTime utcNow, CancellationToken cancellationToken)
@@ -104,6 +110,9 @@ public class UserVerificationService : IUserVerificationService
         }, cancellationToken);
 
         if (user.Phone != null)
+        {
             await _smsProvider.SendSms(user.Phone, $"VerificationCode: {smsCode}", cancellationToken);
+            await _eventBusManager.PhoneValidationOtpRequestedAsync(user.Id, smsCode, cancellationToken);
+        }
     }
 }

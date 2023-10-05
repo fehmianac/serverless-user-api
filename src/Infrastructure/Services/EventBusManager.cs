@@ -45,6 +45,21 @@ public class EventBusManager : IEventBusManager
         return await PublishAsync(new EventModel<object>("UserDeleted", new {UserId = userId}), cancellationToken);
     }
 
+    public async Task<bool> IdentityVerifiedAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await PublishAsync(new EventModel<object>("UserIdentityVerified", new {UserId = userId}), cancellationToken);
+    }
+
+    public async Task<bool> EmailValidationOtpRequestAsync(string userId, int emailCode, CancellationToken cancellationToken)
+    {
+        return await PublishAsync(new EventModel<object>("UserEmailValidationOtpRequested", new {UserId = userId, EmailCode = emailCode}), cancellationToken);
+    }
+
+    public async Task<bool> PhoneValidationOtpRequestedAsync(string userId, int smsCode, CancellationToken cancellationToken)
+    {
+        return await PublishAsync(new EventModel<object>("UserPhoneValidationOtpRequested", new {UserId = userId, SmsCode = smsCode}), cancellationToken);
+    }
+
     private async Task<bool> PublishAsync(EventModel<object> eventModel, CancellationToken cancellationToken = default)
     {
         if (!_eventBusSettingsOptions.Value.IsEnabled)

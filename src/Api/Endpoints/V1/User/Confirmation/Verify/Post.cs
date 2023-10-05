@@ -25,7 +25,7 @@ public class Post : IEndpoint
 
         var key = request.KeyType switch
         {
-            UniqueKeyType.Email => user.Email,
+            UniqueKeyType.Email => user.Email?.ToLower(),
             UniqueKeyType.Phone => user.Phone,
             _ => throw new ArgumentOutOfRangeException()
         };

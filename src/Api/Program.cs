@@ -31,6 +31,7 @@ builder.Configuration.AddSystemsManager(config =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<SmsSettings>(builder.Configuration.GetSection("SmsSettings"));
 builder.Services.Configure<UniqueKeySettings>(builder.Configuration.GetSection("UniqueKeySettings"));

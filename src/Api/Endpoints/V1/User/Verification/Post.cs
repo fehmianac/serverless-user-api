@@ -11,6 +11,7 @@ public class Post : IEndpoint
         [FromBody] UserIdentityVerifyRequest request,
         [FromServices] IApiContext apiContext,
         [FromServices] IUserIdentityVerificationService userIdentityVerificationService,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var (identityVerified, _) = await userIdentityVerificationService.CheckIsValidIdentityAsync(request.IdCardUrl, cancellationToken);
@@ -22,6 +23,10 @@ public class Post : IEndpoint
             });
 
         var isVerified = await userIdentityVerificationService.CompareFaceAndIdCardAsync(apiContext.CurrentUserId, request.FaceUrl, request.IdCardUrl, cancellationToken);
+        if (isVerified)
+        {
+            await eventBusManager.IdentityVerifiedAsync(apiContext.CurrentUserId);
+        }
         return Results.Ok(new UserIdentityVerifyResponse
         {
             IsVerified = isVerified

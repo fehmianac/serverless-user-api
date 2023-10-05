@@ -4,6 +4,7 @@ using Domain.Dto;
 using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Api.Endpoints.V1.Lookup;
 
@@ -13,8 +14,16 @@ public class GetList : IEndpoint
         [FromQuery] string? type,
         [FromServices] IApiContext apiContext,
         [FromServices] ILookupRepository lookupRepository,
+        [FromServices] IMemoryCache memoryCache,
         CancellationToken cancellationToken)
     {
+        var cacheKey = $"lookup-{type}-{apiContext.Culture}";
+        var cacheResult = memoryCache.Get<List<LookupDefinitionDto>>(cacheKey);
+        if (cacheResult != null)
+        {
+            return Results.Ok(cacheResult);
+        }
+
         List<LookupDefinitionEntity> lookups;
         if (!string.IsNullOrEmpty(type))
         {
@@ -25,7 +34,9 @@ public class GetList : IEndpoint
             lookups = await lookupRepository.GetAllAsync(cancellationToken);
         }
 
-        return Results.Ok(lookups.Select(x => x.ToDto(apiContext.Culture)).ToList());
+        var result = lookups.Select(x => x.ToDto(apiContext.Culture)).ToList();
+        memoryCache.Set(cacheKey, result, TimeSpan.FromHours(1));
+        return Results.Ok(result);
     }
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
