@@ -65,6 +65,7 @@ builder.Services.AddScoped<ISmsProvider, DummySmsProvider>();
 builder.Services.AddScoped<IMailProvider, DummyEmailProvider>();
 builder.Services.AddScoped<IUserVerificationService, UserVerificationService>();
 builder.Services.AddScoped<IUserIdentityVerificationService, UserIdentityVerificationService>();
+builder.Services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
 builder.Services.AddScoped<ApiKeyValidatorMiddleware>();
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
