@@ -29,10 +29,15 @@ public class Put : IEndpoint
         var utcNow = DateTime.UtcNow;
         var user = await userRepository.GetAsync(id, cancellationToken);
         var oldUser = user;
+        
+        if (oldUser != null)
+            oldUser.Email = oldUser.Email?.ToLower();
+        
         var isRegisterState = user == null;
+        request.Email = request.Email?.ToLower();
         user = new UserEntity
         {
-            Email = request.Email?.ToLower(),
+            Email = request.Email,
             Gender = request.Gender,
             BirthDate = request.BirthDate,
             AdditionalData = request.AdditionalData,
