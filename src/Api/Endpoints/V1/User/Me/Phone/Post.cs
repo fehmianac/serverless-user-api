@@ -13,12 +13,19 @@ public class Post : IEndpoint
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IOtpCodeRepository otpCodeRepository,
+        [FromServices] IUniqueKeyRepository uniqueKeyRepository,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(apiContext.CurrentUserId, cancellationToken);
         if (user == null)
         {
             return Results.NotFound();
+        }
+
+        var existResponse = await uniqueKeyRepository.GetAsync(request.Phone, UniqueKeyType.Phone, cancellationToken);
+        if (existResponse?.UserId != user.Id)
+        {
+            return Results.Problem("Phone already exists");
         }
 
         var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(apiContext.CurrentUserId, request.Code, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
@@ -35,7 +42,7 @@ public class Post : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/v1/users/me/email", Handler)
+        endpoints.MapPost("/v1/users/me/phone", Handler)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)

@@ -20,6 +20,7 @@ public class Post : IEndpoint
         {
             return Results.NotFound();
         }
+        
 
         await userVerificationService.SendVerificationCodeAsync(user.Id, UniqueKeyType.EmailUpdateRequest, cancellationToken);
         return Results.Ok();
