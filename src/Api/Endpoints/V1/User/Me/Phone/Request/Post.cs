@@ -27,7 +27,7 @@ public class Post : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/v1/users/me/email/change/request", Handler)
+        endpoints.MapPost("/v1/users/me/phone/change/request", Handler)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
