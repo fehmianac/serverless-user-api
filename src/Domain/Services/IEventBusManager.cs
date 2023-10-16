@@ -11,6 +11,8 @@ public interface IEventBusManager
     Task<bool> DeviceRemovedAsync(UserDeviceEntity userDevice, CancellationToken cancellationToken = default);
     Task<bool> UserDeletedAsync(string userId, CancellationToken cancellationToken);
     Task<bool> IdentityVerifiedAsync(string userId, CancellationToken cancellationToken = default);
-    Task<bool> EmailValidationOtpRequestAsync(string userId, int emilCode, CancellationToken cancellationToken);
-    Task<bool> PhoneValidationOtpRequestedAsync(string userId, int smsCode, CancellationToken cancellationToken);
+    Task<bool> EmailValidationOtpRequestAsync(string userId, string emilCode, CancellationToken cancellationToken);
+    Task<bool> PhoneValidationOtpRequestedAsync(string userId, string smsCode, CancellationToken cancellationToken);
+    Task<bool> EmailUpdateOtpRequestedAsync(string userId, string code, CancellationToken cancellationToken);
+    Task<bool> PhoneUpdateOtpRequestedAsync(string userId, string code, CancellationToken cancellationToken);
 }

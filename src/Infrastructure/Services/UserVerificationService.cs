@@ -41,15 +41,14 @@ public class UserVerificationService : IUserVerificationService
             return false;
         }
 
-        var utcNow = DateTime.UtcNow;
         if (_userVerificationSettingsOptions.Value.EmailShouldVerifyOnRegister)
         {
-            await SendMailOtpCodeAsync(user, utcNow, cancellationToken);
+            await SendMailOtpCodeAsync(user, cancellationToken);
         }
 
         if (_userVerificationSettingsOptions.Value.PhoneShouldVerifyOnRegister)
         {
-            await SendSmsOtpCodeAsync(user, utcNow, cancellationToken);
+            await SendSmsOtpCodeAsync(user, cancellationToken);
         }
 
         return true;
@@ -66,29 +65,46 @@ public class UserVerificationService : IUserVerificationService
         switch (keyType)
         {
             case UniqueKeyType.Email:
-                await SendMailOtpCodeAsync(user, DateTime.UtcNow, cancellationToken);
+                await SendMailOtpCodeAsync(user, cancellationToken);
                 return true;
             case UniqueKeyType.Phone:
-                await SendSmsOtpCodeAsync(user, DateTime.UtcNow, cancellationToken);
+                await SendSmsOtpCodeAsync(user, cancellationToken);
                 return true;
             case UniqueKeyType.UserName:
+                return true;
+            case UniqueKeyType.EmailUpdateRequest:
+                await SendEmailUpdateOtp(user, cancellationToken);
+                return true;
+            case UniqueKeyType.PhoneUpdateRequest:
+                await SendPhoneUpdateOtp(user, cancellationToken);
+                return true;
             default:
+
                 return false;
         }
     }
 
-    private async Task SendMailOtpCodeAsync(UserEntity user, DateTime utcNow, CancellationToken cancellationToken)
+    private async Task SendEmailUpdateOtp(UserEntity user, CancellationToken cancellationToken)
     {
-        var rnd = new Random();
-        var emilCode = rnd.Next(11111, 99999);
-        await _otpCodeRepository.SaveOtpCodeAsync(new OtpCodeEntity
+        var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.EmailUpdateRequest, cancellationToken);
+        if (user.Email != null)
         {
-            Code = emilCode.ToString(),
-            Type = UniqueKeyType.Email,
-            CreatedAt = utcNow,
-            ExpireAt = utcNow.AddMinutes(_userVerificationSettingsOptions.Value.ExpireInXMinute),
-            UserId = user.Id
-        }, cancellationToken);
+            await _eventBusManager.EmailUpdateOtpRequestedAsync(user.Id, emilCode, cancellationToken);
+        }
+    }
+
+    private async Task SendPhoneUpdateOtp(UserEntity user, CancellationToken cancellationToken)
+    {
+        var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
+        if (user.Email != null)
+        {
+            await _eventBusManager.PhoneUpdateOtpRequestedAsync(user.Id, emilCode, cancellationToken);
+        }
+    }
+
+    private async Task SendMailOtpCodeAsync(UserEntity user, CancellationToken cancellationToken)
+    {
+        var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.Email, cancellationToken);
         if (user.Email != null)
         {
             await _mailProvider.SendMailAsync(user.Email, "Subject", $"VerificationCode: {emilCode}", cancellationToken);
@@ -96,23 +112,30 @@ public class UserVerificationService : IUserVerificationService
         }
     }
 
-    private async Task SendSmsOtpCodeAsync(UserEntity user, DateTime utcNow, CancellationToken cancellationToken)
+    private async Task SendSmsOtpCodeAsync(UserEntity user, CancellationToken cancellationToken)
     {
-        var rnd = new Random();
-        var smsCode = rnd.Next(11111, 99999);
-        await _otpCodeRepository.SaveOtpCodeAsync(new OtpCodeEntity
-        {
-            Code = smsCode.ToString(),
-            Type = UniqueKeyType.Phone,
-            CreatedAt = utcNow,
-            ExpireAt = utcNow.AddMinutes(_userVerificationSettingsOptions.Value.ExpireInXMinute),
-            UserId = user.Id
-        }, cancellationToken);
-
+        var smsCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.Phone, cancellationToken);
         if (user.Phone != null)
         {
             await _smsProvider.SendSms(user.Phone, $"VerificationCode: {smsCode}", cancellationToken);
             await _eventBusManager.PhoneValidationOtpRequestedAsync(user.Id, smsCode, cancellationToken);
         }
+    }
+
+    private async Task<string> SaveOtpCodeAsync(string userId, UniqueKeyType type, CancellationToken cancellationToken)
+    {
+        var utcNow = DateTime.UtcNow;
+        ;
+        var rnd = new Random();
+        var code = rnd.Next(11111, 99999);
+        await _otpCodeRepository.SaveOtpCodeAsync(new OtpCodeEntity
+        {
+            Code = code.ToString(),
+            Type = UniqueKeyType.Phone,
+            CreatedAt = utcNow,
+            ExpireAt = utcNow.AddMinutes(_userVerificationSettingsOptions.Value.ExpireInXMinute),
+            UserId = userId
+        }, cancellationToken);
+        return code.ToString();
     }
 }
