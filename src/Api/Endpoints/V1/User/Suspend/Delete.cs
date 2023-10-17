@@ -6,8 +6,7 @@ namespace Api.Endpoints.V1.User.Suspend;
 
 public class Delete : IEndpoint
 {
-    private async Task<IResult> Handler([FromRoute] string id,
-        [FromBody] UserSuspendDeleteRequest request,
+    private static async Task<IResult> Handler([FromRoute] string id,
         [FromServices] IUserRepository userRepository,
         CancellationToken cancellationToken)
     {
@@ -15,7 +14,7 @@ public class Delete : IEndpoint
         if (user == null)
             return Results.NotFound();
 
-        user.Status = request.Status;
+        user.Status = "active";
         await userRepository.SaveAsync(user, cancellationToken);
         return Results.Ok();
     }
@@ -28,6 +27,4 @@ public class Delete : IEndpoint
             .Produces(StatusCodes.Status500InternalServerError)
             .WithTags("User");
     }
-
-    public record UserSuspendDeleteRequest(string Status);
 }

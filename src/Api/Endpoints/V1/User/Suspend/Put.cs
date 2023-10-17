@@ -1,3 +1,4 @@
+using Api.Infrastructure.Context;
 using Api.Infrastructure.Contract;
 using Domain.Entities;
 using Domain.Enums;
@@ -8,12 +9,14 @@ namespace Api.Endpoints.V1.User.Suspend;
 
 public class Put : IEndpoint
 {
-    private static async Task<IResult> Handler([FromRoute] string id,
+    private static async Task<IResult> Handler(
         [FromBody] UserSuspendRequest request,
+        [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IReasonRepository reasonRepository,
         CancellationToken cancellationToken)
     {
+        var id = apiContext.CurrentUserId;
         var user = await userRepository.GetAsync(id, cancellationToken);
         if (user == null)
             return Results.NotFound();
@@ -32,7 +35,7 @@ public class Put : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("v1/user/{id}/suspend", Handler)
+        endpoints.MapPut("v1/user/me/suspend", Handler)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
