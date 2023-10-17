@@ -16,7 +16,12 @@ public class ReasonRepository : DynamoRepository, IReasonRepository
 
     public async Task<List<ReasonLookupEntity>> GetReasonLookupAsync(ReasonType type, CancellationToken cancellationToken)
     {
-        return await GetAllAsync<ReasonLookupEntity>(ReasonEntity.GetPk(type), cancellationToken);
+        return await GetAllAsync<ReasonLookupEntity>(ReasonLookupEntity.GetPk(type), cancellationToken);
+    }
+
+    public async Task<bool> SaveReasonLookupAsync(ReasonLookupEntity reason, CancellationToken cancellationToken)
+    {
+        return await SaveAsync(reason, cancellationToken);
     }
 
     public async Task<bool> SaveReasonAsync(ReasonEntity reason, CancellationToken cancellationToken)

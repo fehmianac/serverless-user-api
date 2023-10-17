@@ -1,6 +1,7 @@
 using Api.Infrastructure.Context;
 using Api.Infrastructure.Contract;
 using Domain.Dto;
+using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
