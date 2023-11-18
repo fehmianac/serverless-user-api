@@ -61,6 +61,7 @@ builder.Services.AddScoped<IUniqueKeyRepository, UniqueKeyRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVerifyLogRepository, VerifyLogRepository>();
 builder.Services.AddScoped<IReasonRepository, ReasonRepository>();
+builder.Services.AddScoped<IUserReportRepository, UserReportRepository>();
 builder.Services.AddScoped<ISmsProvider, DummySmsProvider>();
 builder.Services.AddScoped<IMailProvider, DummyEmailProvider>();
 builder.Services.AddScoped<IUserVerificationService, UserVerificationService>();
