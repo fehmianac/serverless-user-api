@@ -3,6 +3,7 @@ using Api.Infrastructure.Contract;
 using Domain.Enums;
 using Domain.Repositories;
 using Domain.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User.Me.Phone.Request;
@@ -10,6 +11,7 @@ namespace Api.Endpoints.V1.User.Me.Phone.Request;
 public class Post : IEndpoint
 {
     private static async Task<IResult> Handler(
+        [FromBody] UserChangePhoneRequest request,
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IUserVerificationService userVerificationService,
@@ -21,7 +23,7 @@ public class Post : IEndpoint
             return Results.NotFound();
         }
 
-        await userVerificationService.SendVerificationCodeAsync(user.Id, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
+        await userVerificationService.SendKeyChangeVerificationCode(user.Id, request.Phone, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
         return Results.Ok();
     }
 
@@ -32,5 +34,15 @@ public class Post : IEndpoint
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
             .WithTags("User");
+    }
+
+    public record UserChangePhoneRequest(string Phone);
+
+    public class UserChangePhoneRequestValidator : AbstractValidator<UserChangePhoneRequest>
+    {
+        public UserChangePhoneRequestValidator()
+        {
+            RuleFor(q => q.Phone).NotEmpty();
+        }
     }
 }

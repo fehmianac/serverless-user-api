@@ -71,12 +71,27 @@ public class UserVerificationService : IUserVerificationService
                 await SendSmsOtpCodeAsync(user, cancellationToken);
                 return true;
             case UniqueKeyType.UserName:
-                return true;
+            default:
+
+                return false;
+        }
+    }
+
+    public async Task<bool> SendKeyChangeVerificationCode(string userId, string newKey, UniqueKeyType keyType, CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetAsync(userId, cancellationToken);
+        if (user == null)
+        {
+            return false;
+        }
+
+        switch (keyType)
+        {
             case UniqueKeyType.EmailUpdateRequest:
-                await SendEmailUpdateOtp(user, cancellationToken);
+                await SendEmailUpdateOtp(user, newKey, cancellationToken);
                 return true;
             case UniqueKeyType.PhoneUpdateRequest:
-                await SendPhoneUpdateOtp(user, cancellationToken);
+                await SendPhoneUpdateOtp(user, newKey, cancellationToken);
                 return true;
             default:
 
@@ -84,21 +99,21 @@ public class UserVerificationService : IUserVerificationService
         }
     }
 
-    private async Task SendEmailUpdateOtp(UserEntity user, CancellationToken cancellationToken)
+    private async Task SendEmailUpdateOtp(UserEntity user, string newKey, CancellationToken cancellationToken)
     {
         var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.EmailUpdateRequest, cancellationToken);
         if (user.Email != null)
         {
-            await _eventBusManager.EmailUpdateOtpRequestedAsync(user.Id, emilCode, cancellationToken);
+            await _eventBusManager.EmailUpdateOtpRequestedAsync(user.Id, newKey, emilCode, cancellationToken);
         }
     }
 
-    private async Task SendPhoneUpdateOtp(UserEntity user, CancellationToken cancellationToken)
+    private async Task SendPhoneUpdateOtp(UserEntity user, string newKey, CancellationToken cancellationToken)
     {
         var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
         if (user.Email != null)
         {
-            await _eventBusManager.PhoneUpdateOtpRequestedAsync(user.Id, emilCode, cancellationToken);
+            await _eventBusManager.PhoneUpdateOtpRequestedAsync(user.Id, newKey, emilCode, cancellationToken);
         }
     }
 

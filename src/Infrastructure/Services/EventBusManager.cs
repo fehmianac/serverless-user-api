@@ -60,14 +60,14 @@ public class EventBusManager : IEventBusManager
         return await PublishAsync(new EventModel<object>("UserPhoneValidationOtpRequested", new {UserId = userId, SmsCode = smsCode}), cancellationToken);
     }
 
-    public async Task<bool> EmailUpdateOtpRequestedAsync(string userId, string code, CancellationToken cancellationToken)
+    public async Task<bool> EmailUpdateOtpRequestedAsync(string userId, string newKey, string code, CancellationToken cancellationToken)
     {
-        return await PublishAsync(new EventModel<object>("UserEmailUpdateOtpRequested", new {UserId = userId, EmailCode = code}), cancellationToken);
+        return await PublishAsync(new EventModel<object>("UserEmailUpdateOtpRequested", new {UserId = userId, NewEmail = newKey, EmailCode = code}), cancellationToken);
     }
 
-    public async Task<bool> PhoneUpdateOtpRequestedAsync(string userId, string code, CancellationToken cancellationToken)
+    public async Task<bool> PhoneUpdateOtpRequestedAsync(string userId, string newKey, string code, CancellationToken cancellationToken)
     {
-        return await PublishAsync(new EventModel<object>("UserPhoneUpdateOtpRequested", new {UserId = userId, PhoneCode = code}), cancellationToken);
+        return await PublishAsync(new EventModel<object>("UserPhoneUpdateOtpRequested", new {UserId = userId, NewPhone = newKey, PhoneCode = code}), cancellationToken);
     }
 
     private async Task<bool> PublishAsync(EventModel<object> eventModel, CancellationToken cancellationToken = default)

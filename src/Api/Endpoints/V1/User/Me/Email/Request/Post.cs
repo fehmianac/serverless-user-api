@@ -3,6 +3,7 @@ using Api.Infrastructure.Contract;
 using Domain.Enums;
 using Domain.Repositories;
 using Domain.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User.Me.Email.Request;
@@ -10,6 +11,7 @@ namespace Api.Endpoints.V1.User.Me.Email.Request;
 public class Post : IEndpoint
 {
     private static async Task<IResult> Handler(
+        [FromBody] UserChangeEmailRequest request,
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IUserVerificationService userVerificationService,
@@ -20,9 +22,9 @@ public class Post : IEndpoint
         {
             return Results.NotFound();
         }
-        
 
-        await userVerificationService.SendVerificationCodeAsync(user.Id, UniqueKeyType.EmailUpdateRequest, cancellationToken);
+
+        await userVerificationService.SendKeyChangeVerificationCode(user.Id, request.Email, UniqueKeyType.EmailUpdateRequest, cancellationToken);
         return Results.Ok();
     }
 
@@ -33,5 +35,15 @@ public class Post : IEndpoint
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
             .WithTags("User");
+    }
+
+    public record UserChangeEmailRequest(string Email);
+
+    public class UserChangeEmailRequestValidator : AbstractValidator<UserChangeEmailRequest>
+    {
+        public UserChangeEmailRequestValidator()
+        {
+            RuleFor(q => q.Email).NotEmpty().EmailAddress();
+        }
     }
 }
