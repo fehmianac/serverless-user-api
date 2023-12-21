@@ -39,6 +39,7 @@ builder.Services.Configure<UserVerificationSettings>(builder.Configuration.GetSe
 builder.Services.Configure<EventBusSettings>(builder.Configuration.GetSection("EventBusSettings"));
 builder.Services.Configure<ApiKeyValidationSettings>(builder.Configuration.GetSection("ApiKeyValidationSettings"));
 builder.Services.Configure<VerificationS3Settings>(builder.Configuration.GetSection("VerificationS3Settings"));
+builder.Services.Configure<OtpSettings>(builder.Configuration.GetSection("OtpSettings"));
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
