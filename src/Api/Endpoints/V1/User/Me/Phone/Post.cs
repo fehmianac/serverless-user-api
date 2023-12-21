@@ -23,12 +23,12 @@ public class Post : IEndpoint
         }
 
         var existResponse = await uniqueKeyRepository.GetAsync(request.Phone, UniqueKeyType.Phone, cancellationToken);
-        if (existResponse?.UserId != user.Id)
+        if (existResponse != null && existResponse.UserId != user.Id)
         {
             return Results.Problem("Phone already exists");
         }
 
-        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(apiContext.CurrentUserId, request.Code, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
+        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, apiContext.CurrentUserId, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
         if (!otpCodeIsValid)
         {
             return Results.NotFound();

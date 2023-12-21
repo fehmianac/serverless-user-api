@@ -23,12 +23,12 @@ public class Post : IEndpoint
         }
 
         var existResponse = await uniqueKeyRepository.GetAsync(request.Email, UniqueKeyType.Email, cancellationToken);
-        if (existResponse?.UserId != user.Id)
+        if (existResponse != null && existResponse.UserId != user.Id)
         {
             return Results.Problem("Email already exists");
         }
 
-        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(apiContext.CurrentUserId, request.Code, UniqueKeyType.EmailUpdateRequest, cancellationToken);
+        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, apiContext.CurrentUserId, UniqueKeyType.EmailUpdateRequest, cancellationToken);
         if (!otpCodeIsValid)
         {
             return Results.NotFound();
