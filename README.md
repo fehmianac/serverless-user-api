@@ -49,7 +49,7 @@ Before you begin, ensure you have the following prerequisites:
     - Consumers can subscribe to the SNS topic to receive notifications about user data modifications.
     - 
 ## Usage
-The Serverless Chat API provides the following endpoints:
+The Serverless User API provides the following endpoints:
 
 ![api-referance.png](docs%2Fapi-referance.png)
 
