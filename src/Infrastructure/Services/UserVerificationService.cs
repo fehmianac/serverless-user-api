@@ -140,13 +140,12 @@ public class UserVerificationService : IUserVerificationService
     private async Task<string> SaveOtpCodeAsync(string userId, UniqueKeyType type, CancellationToken cancellationToken)
     {
         var utcNow = DateTime.UtcNow;
-        ;
         var rnd = new Random();
         var code = rnd.Next(11111, 99999);
         await _otpCodeRepository.SaveOtpCodeAsync(new OtpCodeEntity
         {
             Code = code.ToString(),
-            Type = UniqueKeyType.Phone,
+            Type = type,
             CreatedAt = utcNow,
             ExpireAt = utcNow.AddMinutes(_userVerificationSettingsOptions.Value.ExpireInXMinute),
             UserId = userId
