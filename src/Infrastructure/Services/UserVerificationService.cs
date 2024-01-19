@@ -102,19 +102,13 @@ public class UserVerificationService : IUserVerificationService
     private async Task SendEmailUpdateOtp(UserEntity user, string newKey, CancellationToken cancellationToken)
     {
         var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.EmailUpdateRequest, cancellationToken);
-        if (user.Email != null)
-        {
-            await _eventBusManager.EmailUpdateOtpRequestedAsync(user.Id, newKey, emilCode, cancellationToken);
-        }
+        await _eventBusManager.EmailUpdateOtpRequestedAsync(user.Id, newKey, emilCode, cancellationToken);
     }
 
     private async Task SendPhoneUpdateOtp(UserEntity user, string newKey, CancellationToken cancellationToken)
     {
-        var emilCode = await SaveOtpCodeAsync(user.Id, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
-        if (user.Email != null)
-        {
-            await _eventBusManager.PhoneUpdateOtpRequestedAsync(user.Id, newKey, emilCode, cancellationToken);
-        }
+        var code = await SaveOtpCodeAsync(user.Id, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
+        await _eventBusManager.PhoneUpdateOtpRequestedAsync(user.Id, newKey, code, cancellationToken);
     }
 
     private async Task SendMailOtpCodeAsync(UserEntity user, CancellationToken cancellationToken)
