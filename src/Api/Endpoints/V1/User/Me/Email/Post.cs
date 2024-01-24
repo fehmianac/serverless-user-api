@@ -1,5 +1,6 @@
 using Api.Infrastructure.Context;
 using Api.Infrastructure.Contract;
+using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -27,12 +28,24 @@ public class Post : IEndpoint
         {
             return Results.Problem("Email already exists");
         }
-
-        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, apiContext.CurrentUserId, UniqueKeyType.EmailUpdateRequest, cancellationToken);
+        
+        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, apiContext.CurrentUserId,
+            UniqueKeyType.EmailUpdateRequest, cancellationToken);
         if (!otpCodeIsValid)
         {
             return Results.NotFound();
         }
+
+        if (!string.IsNullOrEmpty(user.Email))
+            await uniqueKeyRepository.DeleteAsync(user.Email, UniqueKeyType.Email, cancellationToken);
+
+        await uniqueKeyRepository.SaveAsync(new UniqueKeyEntity
+        {
+            Value = request.Email,
+            Type = UniqueKeyType.Email,
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        }, cancellationToken);
 
         user.Email = request.Email;
         await userRepository.SaveAsync(user, cancellationToken);
