@@ -23,6 +23,7 @@ public class Post : IEndpoint
             return Results.NotFound();
         }
 
+        request.Email = request.Email.ToLower();
         var existResponse = await uniqueKeyRepository.GetAsync(request.Email, UniqueKeyType.Email, cancellationToken);
         if (existResponse != null && existResponse.UserId != user.Id)
         {
