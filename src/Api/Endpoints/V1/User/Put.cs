@@ -43,6 +43,7 @@ public class Put : IEndpoint
             && !string.IsNullOrEmpty(request.AvatarUrl)
             && !string.IsNullOrEmpty(user.SelfieUrl))
         {
+            //TODO handle it in PubSub
             var verificationResult =
                 await identityVerificationService.VerifyByAvatarAsync(user, user.SelfieUrl, cancellationToken);
             isVerified = verificationResult;
