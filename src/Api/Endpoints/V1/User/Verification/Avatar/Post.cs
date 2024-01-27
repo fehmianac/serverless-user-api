@@ -29,9 +29,9 @@ public class Post : IEndpoint
     {
         endpoints.MapPost("/v1/users/me/verification/avatar", Handler)
             .Produces<bool>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError)
+            .WithTags("User");
     }
 
     public record VerifyByAvatarRequest(string SelfieUrl);
