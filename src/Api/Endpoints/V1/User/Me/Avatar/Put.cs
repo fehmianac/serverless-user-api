@@ -1,6 +1,7 @@
 using Api.Infrastructure.Context;
 using Api.Infrastructure.Contract;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User.Me.Avatar;
@@ -12,6 +13,7 @@ public class Put : IEndpoint
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IUniqueKeyRepository uniqueKeyRepository,
+        [FromServices] IUserIdentityVerificationService identityVerificationService,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(apiContext.CurrentUserId, cancellationToken);
@@ -21,7 +23,12 @@ public class Put : IEndpoint
         }
 
         user.AvatarUrl = request.AvatarUrl;
-        await userRepository.SaveAsync(user, cancellationToken);
+        if (user.IsVerified && !string.IsNullOrEmpty(user.SelfieUrl))
+        {
+            var verificationResult =
+                await identityVerificationService.VerifyByAvatarAsync(user, user.SelfieUrl, cancellationToken);
+            user.IsVerified = verificationResult;
+        }
 
 
         return Results.Ok();

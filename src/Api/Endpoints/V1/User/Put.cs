@@ -19,6 +19,7 @@ public class Put : IEndpoint
         [FromServices] IUniqueKeyRepository uniqueKeyRepository,
         [FromServices] IOptionsSnapshot<UniqueKeySettings> uniqueKeySettingsOptions,
         [FromServices] IUserVerificationService userVerificationService,
+        [FromServices] IUserIdentityVerificationService identityVerificationService,
         [FromServices] IValidator<UserPutRequest> validator,
         CancellationToken cancellationToken)
     {
@@ -29,12 +30,24 @@ public class Put : IEndpoint
         var utcNow = DateTime.UtcNow;
         var user = await userRepository.GetAsync(id, cancellationToken);
         var oldUser = user;
-        
+
         if (oldUser != null)
             oldUser.Email = oldUser.Email?.ToLower();
-        
+
         var isRegisterState = user == null;
         request.Email = request.Email?.ToLower();
+
+        var isVerified = false;
+        if (user is { IsVerified: true }
+            && user.AvatarUrl != request.AvatarUrl
+            && !string.IsNullOrEmpty(request.AvatarUrl)
+            && !string.IsNullOrEmpty(user.SelfieUrl))
+        {
+            var verificationResult =
+                await identityVerificationService.VerifyByAvatarAsync(user, user.SelfieUrl, cancellationToken);
+            isVerified = verificationResult;
+        }
+
         user = new UserEntity
         {
             Email = request.Email,
@@ -46,7 +59,7 @@ public class Put : IEndpoint
             FirstName = request.FirstName,
             AvatarUrl = request.AvatarUrl,
             LastName = request.LastName,
-            IsVerified = false,
+            IsVerified = isVerified,
             UserName = request.UserName,
             Phone = request.Phone,
             Status = request.Status,
@@ -61,13 +74,14 @@ public class Put : IEndpoint
 
         if (uniqueKeySettingsOptions.Value.PhoneShouldBeUnique)
         {
-            var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.Phone, user.Phone, cancellationToken);
+            var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.Phone, user.Phone,
+                cancellationToken);
             if (!check)
             {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
                 {
                     {
-                        "Phone", new[] {"Phone already exists"}
+                        "Phone", new[] { "Phone already exists" }
                     }
                 });
             }
@@ -75,13 +89,14 @@ public class Put : IEndpoint
 
         if (uniqueKeySettingsOptions.Value.EmailShouldBeUnique)
         {
-            var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.Email, user.Email, cancellationToken);
+            var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.Email, user.Email,
+                cancellationToken);
             if (!check)
             {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
                 {
                     {
-                        "Email", new[] {"Email already exists"}
+                        "Email", new[] { "Email already exists" }
                     }
                 });
             }
@@ -89,13 +104,14 @@ public class Put : IEndpoint
 
         if (uniqueKeySettingsOptions.Value.UserNameShouldBeUnique)
         {
-            var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.UserName, user.UserName, cancellationToken);
+            var check = await CheckUniqueKey(uniqueKeyRepository, user.Id, UniqueKeyType.UserName, user.UserName,
+                cancellationToken);
             if (!check)
             {
                 return Results.ValidationProblem(new Dictionary<string, string[]>
                 {
                     {
-                        "UserName", new[] {"UserName already exists"}
+                        "UserName", new[] { "UserName already exists" }
                     }
                 });
             }
@@ -106,17 +122,20 @@ public class Put : IEndpoint
 
         if (uniqueKeySettingsOptions.Value.PhoneShouldBeUnique)
         {
-            await OrganizeUniqueKey(uniqueKeyRepository, UniqueKeyType.Phone, user.Id, oldUser?.Phone, user.Phone, cancellationToken);
+            await OrganizeUniqueKey(uniqueKeyRepository, UniqueKeyType.Phone, user.Id, oldUser?.Phone, user.Phone,
+                cancellationToken);
         }
 
         if (uniqueKeySettingsOptions.Value.EmailShouldBeUnique)
         {
-            await OrganizeUniqueKey(uniqueKeyRepository, UniqueKeyType.Email, user.Id, oldUser?.Email, user.Email, cancellationToken);
+            await OrganizeUniqueKey(uniqueKeyRepository, UniqueKeyType.Email, user.Id, oldUser?.Email, user.Email,
+                cancellationToken);
         }
 
         if (uniqueKeySettingsOptions.Value.UserNameShouldBeUnique)
         {
-            await OrganizeUniqueKey(uniqueKeyRepository, UniqueKeyType.UserName, user.Id, oldUser?.UserName, user.UserName, cancellationToken);
+            await OrganizeUniqueKey(uniqueKeyRepository, UniqueKeyType.UserName, user.Id, oldUser?.UserName,
+                user.UserName, cancellationToken);
         }
 
         if (!isRegisterState)
@@ -130,7 +149,8 @@ public class Put : IEndpoint
     }
 
 
-    private static async Task<bool> CheckUniqueKey(IUniqueKeyRepository uniqueKeyRepository, string userId, UniqueKeyType keyType, string? key, CancellationToken cancellationToken)
+    private static async Task<bool> CheckUniqueKey(IUniqueKeyRepository uniqueKeyRepository, string userId,
+        UniqueKeyType keyType, string? key, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(key))
             return true;
@@ -139,7 +159,8 @@ public class Put : IEndpoint
         return check == null || check.UserId == userId;
     }
 
-    private static async Task OrganizeUniqueKey(IUniqueKeyRepository uniqueKeyRepository, UniqueKeyType keyType, string userId, string? oldKey, string? key, CancellationToken cancellationToken)
+    private static async Task OrganizeUniqueKey(IUniqueKeyRepository uniqueKeyRepository, UniqueKeyType keyType,
+        string userId, string? oldKey, string? key, CancellationToken cancellationToken)
     {
         if (oldKey == key)
         {

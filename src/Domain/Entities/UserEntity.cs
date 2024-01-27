@@ -14,6 +14,7 @@ public class UserEntity : IEntity
     [JsonPropertyName("email")] public string? Email { get; set; }
     [JsonPropertyName("phone")] public string? Phone { get; set; }
     [JsonPropertyName("avatarUrl")] public string? AvatarUrl { get; set; }
+    [JsonPropertyName("selfieUrl")] public string? SelfieUrl { get; set; }
     [JsonPropertyName("gender")] public string? Gender { get; set; }
     [JsonPropertyName("birthDate")] public DateTime? BirthDate { get; set; }
     [JsonPropertyName("status")] public string Status { get; set; } = default!;
@@ -25,4 +26,5 @@ public class UserEntity : IEntity
     [JsonPropertyName("updatedAt")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     [JsonPropertyName("additionalData")] public Dictionary<string, string> AdditionalData { get; set; } = new();
     [JsonPropertyName("settingsData")] public Dictionary<string, string> SettingsData { get; set; } = new();
+    
 }
