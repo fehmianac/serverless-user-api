@@ -30,6 +30,7 @@ public class Put : IEndpoint
             user.IsVerified = verificationResult;
         }
 
+        await userRepository.SaveAsync(user, cancellationToken);
 
         return Results.Ok();
     }
