@@ -1,5 +1,6 @@
 using Api.Infrastructure.Context;
 using Api.Infrastructure.Contract;
+using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,14 @@ public class Post : IEndpoint
 
         if (!string.IsNullOrEmpty(user.Phone))
             await uniqueKeyRepository.DeleteAsync(user.Phone, UniqueKeyType.Phone, cancellationToken);
+        
+        await uniqueKeyRepository.SaveAsync(new UniqueKeyEntity
+        {
+            Value = request.Phone,
+            Type = UniqueKeyType.Phone,
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        }, cancellationToken);
         user.Phone = request.Phone;
         await userRepository.SaveAsync(user, cancellationToken);
 
