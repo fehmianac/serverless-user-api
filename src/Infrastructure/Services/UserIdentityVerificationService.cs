@@ -115,14 +115,22 @@ public class UserIdentityVerificationService : IUserIdentityVerificationService
                 }
             },
         };
-        var response = await _amazonRekognition.CompareFacesAsync(request, cancellationToken);
-        var result = response.FaceMatches.Any(x => x.Similarity > _verificationS3SettingsOptions.Value.MinConfidence);
-        if (!result)
+
+        try
+        {  var response = await _amazonRekognition.CompareFacesAsync(request, cancellationToken);
+            var result = response.FaceMatches.Any(x => x.Similarity > _verificationS3SettingsOptions.Value.MinConfidence);
+            if (!result)
+                return result;
+            user.IsVerified = true;
+            user.SelfieUrl = selfieUrl;
+            await _userRepository.SaveAsync(user, cancellationToken);
             return result;
-        user.IsVerified = true;
-        user.SelfieUrl = selfieUrl;
-        await _userRepository.SaveAsync(user, cancellationToken);
-        return result;
+        }
+        catch
+        {
+            return false;
+        }
+      
     }
 
     private static string GetObjectKey(string url)
