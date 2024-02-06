@@ -67,7 +67,7 @@ public class EventBusManager : IEventBusManager
 
     public async Task<bool> PhoneUpdateOtpRequestedAsync(string userId, string newKey, string code, CancellationToken cancellationToken)
     {
-        return await PublishAsync(new EventModel<object>("UserPhoneUpdateOtpRequested", new {UserId = userId, NewPhone = newKey, PhoneCode = code}), cancellationToken);
+        return await PublishAsync(new EventModel<object>("UserPhoneUpdateOtpRequested", new {UserId = userId, NewPhone = newKey, SmsCode = code}), cancellationToken);
     }
 
     private async Task<bool> PublishAsync(EventModel<object> eventModel, CancellationToken cancellationToken = default)
