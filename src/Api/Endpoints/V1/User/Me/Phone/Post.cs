@@ -28,14 +28,18 @@ public class Post : IEndpoint
             return Results.Problem("Phone already exists");
         }
 
-        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, apiContext.CurrentUserId, UniqueKeyType.PhoneUpdateRequest, cancellationToken);
+        var otpCodeIsValid = await otpCodeRepository.CheckOtpCodeAsync(request.Code, apiContext.CurrentUserId,
+            UniqueKeyType.PhoneUpdateRequest, cancellationToken);
         if (!otpCodeIsValid)
         {
             return Results.NotFound();
         }
 
+        if (!string.IsNullOrEmpty(user.Phone))
+            await uniqueKeyRepository.DeleteAsync(user.Phone, UniqueKeyType.Phone, cancellationToken);
         user.Phone = request.Phone;
         await userRepository.SaveAsync(user, cancellationToken);
+
 
         return Results.Ok();
     }
