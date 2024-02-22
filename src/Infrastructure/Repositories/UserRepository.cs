@@ -50,4 +50,9 @@ public class UserRepository : DynamoRepository, IUserRepository
             Id = q
         }).ToList(), cancellationToken);
     }
+
+    public async Task<IEnumerable<UserEntity>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        return await GetAllAsync<UserEntity>("users", cancellationToken);
+    }
 }

@@ -3,6 +3,7 @@ using Api.Infrastructure.Contract;
 using Domain.Repositories;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Api.Endpoints.V1.User.Me.Avatar;
 
@@ -14,6 +15,7 @@ public class Put : IEndpoint
         [FromServices] IUserRepository userRepository,
         [FromServices] IUniqueKeyRepository uniqueKeyRepository,
         [FromServices] IUserIdentityVerificationService identityVerificationService,
+        [FromServices] IStringLocalizer localizer,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(apiContext.CurrentUserId, cancellationToken);

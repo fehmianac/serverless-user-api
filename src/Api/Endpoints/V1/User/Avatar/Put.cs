@@ -2,6 +2,7 @@ using Api.Infrastructure.Contract;
 using Domain.Repositories;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Api.Endpoints.V1.User.Avatar;
 
@@ -13,12 +14,13 @@ public class Put : IEndpoint
         [FromServices] IUserRepository userRepository,
         [FromServices] IUniqueKeyRepository uniqueKeyRepository,
         [FromServices] IUserIdentityVerificationService identityVerificationService,
+        [FromServices] IStringLocalizer localizer,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(id, cancellationToken);
         if (user == null)
         {
-            return Results.NotFound();
+            return Results.NotFound(localizer["UserNotFound"]);
         }
 
         user.AvatarUrl = request.AvatarUrl;

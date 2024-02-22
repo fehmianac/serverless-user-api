@@ -10,4 +10,5 @@ public interface IUserRepository
     Task<(IList<UserEntity> users, string nextToken)> GetPagedAsync(int limit, string? nextToken, CancellationToken cancellationToken);
 
     Task<IList<UserEntity>> GetUsersAsync(IList<string> userIds, CancellationToken cancellationToken);
+    Task<IEnumerable<UserEntity>> GetAllAsync(CancellationToken cancellationToken);
 }

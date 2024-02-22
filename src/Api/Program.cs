@@ -1,5 +1,7 @@
+using System.Globalization;
 using Amazon.DynamoDBv2;
 using Amazon.Extensions.Configuration.SystemsManager;
+using Amazon.Extensions.NETCore.Setup;
 using Amazon.Rekognition;
 using Amazon.SimpleNotificationService;
 using Api.Extensions;
@@ -14,6 +16,9 @@ using FluentValidation.AspNetCore;
 using Infrastructure.Providers;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
@@ -80,10 +85,42 @@ builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
 builder.Services.AddAWSService<IAmazonRekognition>();
 builder.Services.AddAWSLambdaHosting(Environment.GetEnvironmentVariable("ApiGatewayType") == "RestApi" ? LambdaEventSource.RestApi : LambdaEventSource.HttpApi);
 
+
+builder.Services.AddLocalization(options => { options.ResourcesPath = "Resources"; });
+builder.Services.AddSingleton<IStringLocalizerFactory, ResourceManagerStringLocalizerFactory>();
+builder.Services.AddSingleton<IStringLocalizer>(provider =>
+    provider.GetService<IStringLocalizerFactory>().Create("Resource", "Api"));
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("tr-TR")
+    };
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
+    {
+        var languages = context.Request.Headers["x-culture"].ToString();
+        var currentLanguage = languages.Split(',').FirstOrDefault();
+        var defaultLanguage = string.IsNullOrEmpty(currentLanguage) ? "en-US" : currentLanguage;
+        if (!supportedCultures.Where(s => s.Name.Equals(defaultLanguage)).Any())
+        {
+            defaultLanguage = "en-US";
+        }
+
+        return Task.FromResult(new ProviderCultureResult(defaultLanguage, defaultLanguage));
+    }));
+});
+builder.Services.AddLocalization();
 var option = builder.Configuration.GetAWSOptions();
 builder.Services.AddDefaultAWSOptions(option);
 
 var app = builder.Build();
+
+var localizationOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(localizationOptions.Value);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

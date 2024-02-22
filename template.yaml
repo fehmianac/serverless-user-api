@@ -72,6 +72,9 @@ Resources:
           KeyType: "RANGE"
       BillingMode:
         PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
       SSESpecification:
         SSEEnabled: True
       TableName: users
@@ -87,7 +90,7 @@ Resources:
       Role: !GetAtt UserApiLambdaFunctionExecutionRole.Arn
       MemorySize: 512
       Timeout: 180
-      Runtime: dotnet6
+      Runtime: dotnet8
       Environment:
         Variables:
           TABLE_NAME: users
