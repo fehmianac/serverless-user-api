@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.103.20" />
-        <PackageReference Include="AWSSDK.Rekognition" Version="3.7.200.40" />
-        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.200.21" />
-        <PackageReference Include="AWSSDK.SQS" Version="3.7.103.4" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+        <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.301.14" />
+        <PackageReference Include="AWSSDK.Rekognition" Version="3.7.301.15" />
+        <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.301" />
+        <PackageReference Include="AWSSDK.SQS" Version="3.7.300.52" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     </ItemGroup>
 
     <ItemGroup>
