@@ -5,7 +5,7 @@ namespace Domain.Entities;
 
 public class UserDeviceEntity : IEntity
 {
-    [JsonPropertyName("pk")] public string Pk => $"userDevices#{UserId}#";
+    [JsonPropertyName("pk")] public string Pk => $"userDevices#{UserId}";
     [JsonPropertyName("sk")] public string Sk => $"{Id}";
     [JsonPropertyName("id")] public string Id { get; set; } = default!;
     [JsonPropertyName("userId")] public string UserId { get; set; } = default!;
