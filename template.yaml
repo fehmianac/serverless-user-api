@@ -11,13 +11,24 @@ Parameters:
     Default: 'aws-websockets-adaptor'
     Description: (Required) The name of the S3 bucket where the Lambda function code is stored. Minimum 3 characters
 
+  ExposeType:
+    Type: String
+    Default: 'FunctionUrl'
+    AllowedValues: ['FunctionUrl', 'ApiGateway']
+    Description: (Required) The type of exposure for the API. FunctionUrl or ApiGateway
+
+Conditions:
+  IsFunctionUrlAuth: !Equals [!Ref ExposeType, "FunctionUrl"]
+  IsApiGatewayAuth: !Equals [!Ref ExposeType, "ApiGateway"]
+  
 Resources:
   UserApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: user-api
       ProtocolType: HTTP
-
+    Condition: IsApiGatewayAuth
+    
   ProxyRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -29,7 +40,8 @@ Resources:
         - '/'
         - - 'integrations'
           - !Ref ProxyRouteAnyMethod
-  
+    Condition: IsApiGatewayAuth
+    
   ProxyRouteAnyMethod:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -40,7 +52,7 @@ Resources:
       IntegrationUri:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserApiLambdaFunction.Arn}/invocations
-  
+    Condition: IsApiGatewayAuth
   
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
@@ -48,7 +60,8 @@ Resources:
       - ProxyRoute
     Properties:
       ApiId: !Ref UserApi
-  
+    Condition: IsApiGatewayAuth
+    
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
@@ -56,7 +69,18 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref UserApi
-  
+    Condition: IsApiGatewayAuth
+    
+  UserApiLambdaFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - UserApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UserApiLambdaFunction
+      Principal: apigateway.amazonaws.com
+    Condition: IsApiGatewayAuth
+    
   UserApiTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -97,21 +121,29 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: users
-  
+
+  UserApiApiFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      AuthType: NONE
+      TargetFunctionArn: !Ref UserApiLambdaFunction
+    Condition: IsFunctionUrlAuth
+
+  UserApiFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - UserApiLambdaFunction
+    Properties:
+      Action: lambda:InvokeFunctionUrl
+      FunctionName: !Ref UserApiLambdaFunction
+      FunctionUrlAuthType: 'NONE'
+      Principal: "*"
+      
   UserApiLambdaFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/UserApiLambdaFunction"
       RetentionInDays: 14
-  
-  UserApiLambdaFunctionPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - UserApi
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref UserApiLambdaFunction
-      Principal: apigateway.amazonaws.com
 
   UserApiLambdaFunctionExecutionRole:
     Type: AWS::IAM::Role
@@ -216,8 +248,3 @@ Resources:
       Value: '{"BucketName":"aws-websockets-adaptor","MinConfidence":77}'
       Description: VerificationS3Settings
       
-      
-Outputs:
-  UserApiURI:
-    Description: "The Rest URI to connect to"
-    Value: !Join [ '', [ 'https://', !Ref UserApi, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/','prod' ] ]
