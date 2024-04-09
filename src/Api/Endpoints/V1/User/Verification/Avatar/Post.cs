@@ -13,6 +13,7 @@ public class Post : IEndpoint
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IUserIdentityVerificationService identityVerificationService,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(apiContext.CurrentUserId, cancellationToken);
@@ -21,6 +22,8 @@ public class Post : IEndpoint
 
         var verificationResult =
             await identityVerificationService.VerifyByAvatarAsync(user, request.SelfieUrl, cancellationToken);
+        if (verificationResult)
+            await eventBusManager.IdentityVerifiedAsync(user.Id, cancellationToken);
 
         return Results.Ok(verificationResult);
     }

@@ -21,6 +21,7 @@ public class Put : IEndpoint
         [FromServices] IUserVerificationService userVerificationService,
         [FromServices] IUserIdentityVerificationService identityVerificationService,
         [FromServices] IValidator<UserPutRequest> validator,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -47,6 +48,8 @@ public class Put : IEndpoint
             var verificationResult =
                 await identityVerificationService.VerifyByAvatarAsync(user, user.SelfieUrl, cancellationToken);
             isVerified = verificationResult;
+            if(!verificationResult)
+                await eventBusManager.LostVerifiedAsync(user.Id, cancellationToken);
         }
 
         user = new UserEntity

@@ -16,6 +16,7 @@ public class Put : IEndpoint
         [FromServices] IUniqueKeyRepository uniqueKeyRepository,
         [FromServices] IUserIdentityVerificationService identityVerificationService,
         [FromServices] IStringLocalizer localizer,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(apiContext.CurrentUserId, cancellationToken);
@@ -30,6 +31,8 @@ public class Put : IEndpoint
             var verificationResult =
                 await identityVerificationService.VerifyByAvatarAsync(user, user.SelfieUrl, cancellationToken);
             user.IsVerified = verificationResult;
+            if(!verificationResult)
+                await eventBusManager.LostVerifiedAsync(user.Id,cancellationToken);
         }
 
         await userRepository.SaveAsync(user, cancellationToken);

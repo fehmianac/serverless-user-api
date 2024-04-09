@@ -17,4 +17,5 @@ public interface IEventBusManager
     Task<bool> PhoneUpdateOtpRequestedAsync(string userId, string newKey, string code, CancellationToken cancellationToken);
     Task<bool> UserHasBeenSuspendedAsync(string userId, string requestReasonId, CancellationToken cancellationToken);
     Task<bool> UserReactivatedAsync(string userId, CancellationToken cancellationToken);
+    Task<bool> LostVerifiedAsync(string userId, CancellationToken cancellationToken);
 }

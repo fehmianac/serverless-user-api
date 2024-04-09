@@ -18,13 +18,15 @@ public class UserIdentityVerificationService : IUserIdentityVerificationService
     private readonly IAmazonRekognition _amazonRekognition;
     private readonly IOptionsSnapshot<VerificationS3Settings> _verificationS3SettingsOptions;
     private readonly IUserRepository _userRepository;
+    private readonly IEventBusManager _eventBusManager;
 
     public UserIdentityVerificationService(IAmazonRekognition amazonRekognition,
-        IOptionsSnapshot<VerificationS3Settings> verificationS3SettingsOptions, IUserRepository userRepository)
+        IOptionsSnapshot<VerificationS3Settings> verificationS3SettingsOptions, IUserRepository userRepository, IEventBusManager eventBusManager)
     {
         _amazonRekognition = amazonRekognition;
         _verificationS3SettingsOptions = verificationS3SettingsOptions;
         _userRepository = userRepository;
+        _eventBusManager = eventBusManager;
     }
 
     public async Task<(bool, List<string>)> CheckIsValidIdentityAsync(string idCardUrl,
