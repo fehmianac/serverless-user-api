@@ -15,4 +15,5 @@ public interface IEventBusManager
     Task<bool> PhoneValidationOtpRequestedAsync(string userId, string smsCode, CancellationToken cancellationToken);
     Task<bool> EmailUpdateOtpRequestedAsync(string userId, string newKey, string code, CancellationToken cancellationToken);
     Task<bool> PhoneUpdateOtpRequestedAsync(string userId, string newKey, string code, CancellationToken cancellationToken);
+    Task<bool> UserHasBeenSuspendedAsync(string userId, string requestReasonId, CancellationToken cancellationToken);
 }

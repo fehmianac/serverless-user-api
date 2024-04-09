@@ -3,6 +3,7 @@ using Api.Infrastructure.Contract;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User.Suspend;
@@ -14,6 +15,7 @@ public class Put : IEndpoint
         [FromServices] IApiContext apiContext,
         [FromServices] IUserRepository userRepository,
         [FromServices] IReasonRepository reasonRepository,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var id = apiContext.CurrentUserId;
@@ -30,6 +32,8 @@ public class Put : IEndpoint
             UserId = user.Id,
             Type = ReasonType.Suspend
         }, cancellationToken);
+        
+        await eventBusManager.UserHasBeenSuspendedAsync(user.Id, request.ReasonId, cancellationToken);
         return Results.Ok();
     }
 

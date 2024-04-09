@@ -70,6 +70,11 @@ public class EventBusManager : IEventBusManager
         return await PublishAsync(new EventModel<object>("UserPhoneUpdateOtpRequested", new {UserId = userId, NewPhone = newKey, SmsCode = code}), cancellationToken);
     }
 
+    public async Task<bool> UserHasBeenSuspendedAsync(string userId, string requestReasonId, CancellationToken cancellationToken)
+    {
+        return await PublishAsync(new EventModel<object>("UserSuspended", new {UserId = userId}), cancellationToken);
+    }
+
     private async Task<bool> PublishAsync(EventModel<object> eventModel, CancellationToken cancellationToken = default)
     {
         if (!_eventBusSettingsOptions.Value.IsEnabled)
