@@ -75,6 +75,11 @@ public class EventBusManager : IEventBusManager
         return await PublishAsync(new EventModel<object>("UserSuspended", new {UserId = userId}), cancellationToken);
     }
 
+    public async Task<bool> UserReactivatedAsync(string userId, CancellationToken cancellationToken)
+    {
+        return await PublishAsync(new EventModel<object>("UserReactivated", new {UserId = userId}), cancellationToken);
+    }
+
     private async Task<bool> PublishAsync(EventModel<object> eventModel, CancellationToken cancellationToken = default)
     {
         if (!_eventBusSettingsOptions.Value.IsEnabled)

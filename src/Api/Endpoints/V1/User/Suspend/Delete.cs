@@ -1,13 +1,16 @@
 using Api.Infrastructure.Contract;
 using Domain.Repositories;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.V1.User.Suspend;
 
 public class Delete : IEndpoint
 {
-    private static async Task<IResult> Handler([FromRoute] string id,
+    private static async Task<IResult> Handler(
+        [FromRoute] string id,
         [FromServices] IUserRepository userRepository,
+        [FromServices] IEventBusManager eventBusManager,
         CancellationToken cancellationToken)
     {
         var user = await userRepository.GetAsync(id, cancellationToken);
@@ -16,6 +19,7 @@ public class Delete : IEndpoint
 
         user.Status = "active";
         await userRepository.SaveAsync(user, cancellationToken);
+        await eventBusManager.UserReactivatedAsync(user.Id, cancellationToken);
         return Results.Ok();
     }
 
