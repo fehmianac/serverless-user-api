@@ -34,7 +34,7 @@ public class GetList : IEndpoint
             lookups = await lookupRepository.GetAllAsync(cancellationToken);
         }
 
-        var result = lookups.Select(x => x.ToDto(apiContext.Culture)).ToList();
+        var result = lookups.Select(x => x.ToDto(apiContext.Culture)).OrderBy(q=> q.Rank).ToList();
         memoryCache.Set(cacheKey, result, TimeSpan.FromHours(1));
         return Results.Ok(result);
     }

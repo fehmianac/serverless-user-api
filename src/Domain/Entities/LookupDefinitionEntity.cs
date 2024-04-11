@@ -13,6 +13,8 @@ public class LookupDefinitionEntity : IEntity
     [JsonPropertyName("type")] public string Type { get; set; } = default!;
     [JsonPropertyName("name")] public string Name { get; set; } = default!;
     [JsonPropertyName("translations")] public List<TranslationDto> Translations { get; set; } = new();
+    
+    [JsonPropertyName("rank")] public int Rank { get; set; }
 
     public static string GetPk()
     {

@@ -7,6 +7,7 @@ public class LookupDefinitionDto
     public string Id { get; set; } = default!;
     public string Name { get; set; } = default!;
     public string Type { get; set; } = default!;
+    public int Rank { get; set; }
 }
 
 public static class LookupDefinitionDtoMapper
@@ -22,7 +23,8 @@ public static class LookupDefinitionDtoMapper
         {
             Id = entity.Id,
             Name = translation?.Name ?? "----",
-            Type = entity.Type
+            Type = entity.Type,
+            Rank = entity.Rank,
         };
     }
 }
