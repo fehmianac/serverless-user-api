@@ -59,6 +59,9 @@ var logger = new LoggerConfiguration()
     .MinimumLevel.Override("System.", LogEventLevel.Warning)
     .CreateLogger();
 
+// Register Serilog
+builder.Logging.AddSerilog(logger);
+
 builder.Services.AddScoped<IApiContext, ApiContext>();
 builder.Services.AddScoped<IEventBusManager, EventBusManager>();
 builder.Services.AddScoped<ILookupRepository, LookupRepository>();
