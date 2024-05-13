@@ -18,7 +18,7 @@ public class UserDeviceRepository : DynamoRepository, IUserDeviceRepository
 
     public async Task<UserDeviceEntity?> GetUserDeviceAsync(string userId, string deviceId, CancellationToken cancellationToken = default)
     {
-        return await GetAsync<UserDeviceEntity>($"userDevices#{userId}#", deviceId, cancellationToken);
+        return await GetAsync<UserDeviceEntity>(UserDeviceEntity.GetPk(userId), deviceId, cancellationToken);
     }
 
     public async Task<bool> SaveUserDeviceAsync(UserDeviceEntity entity, CancellationToken cancellationToken = default)
