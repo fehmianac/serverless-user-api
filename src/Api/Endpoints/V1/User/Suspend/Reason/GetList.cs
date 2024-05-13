@@ -19,7 +19,7 @@ public class GetList : IEndpoint
     {
         var reasons = await reasonRepository.GetReasonLookupAsync(type, cancellationToken);
 
-        return Results.Ok(reasons.Select(q => q.ToDto(apiContext.Culture)));
+        return Results.Ok(reasons.OrderBy(q=> q.Rank).Select(q => q.ToDto(apiContext.Culture)));
     }
 
     public void MapEndpoint(IEndpointRouteBuilder endpoints)
