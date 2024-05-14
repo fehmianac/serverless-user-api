@@ -22,11 +22,16 @@ public class Put : IEndpoint
         [FromServices] IUserIdentityVerificationService identityVerificationService,
         [FromServices] IValidator<UserPutRequest> validator,
         [FromServices] IEventBusManager eventBusManager,
+        [FromServices] ILogger<Put> logger,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
+        {
+            logger.LogWarning("Invalid request. {ValidationResult}, {Request}", validationResult, request);
             return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+            
 
         var utcNow = DateTime.UtcNow;
         var user = await userRepository.GetAsync(id, cancellationToken);
