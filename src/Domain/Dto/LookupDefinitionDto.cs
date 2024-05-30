@@ -17,6 +17,9 @@ public static class LookupDefinitionDtoMapper
         var translation = entity.Translations.FirstOrDefault(q => q.Culture == culture);
 
         if (translation == null)
+            translation = entity.Translations.FirstOrDefault(q => q.IsDefault);
+
+        if (translation == null)
             translation = entity.Translations.FirstOrDefault();
 
         return new LookupDefinitionDto
