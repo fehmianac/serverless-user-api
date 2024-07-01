@@ -15,8 +15,18 @@ public class GetList : IEndpoint
         [FromServices] IApiContext apiContext,
         [FromServices] ILookupRepository lookupRepository,
         [FromServices] IMemoryCache memoryCache,
+        [FromServices] IUserRepository userRepository,
         CancellationToken cancellationToken)
     {
+        var allUsers = await userRepository.GetAllAsync(cancellationToken);
+        var user = allUsers.Where(q => q.CreatedAt > new DateTime(2024,6,19));
+        var phones = user.Select(q => q.Phone);
+        var emails = user.Select(q => q.Email);
+
+        var emailsWithComma = string.Join(',', emails);
+
+        var phoneWithComma = string.Join(',', phones);
+        
         var cacheKey = $"lookup-{type}-{apiContext.Culture}";
         var cacheResult = memoryCache.Get<List<LookupDefinitionDto>>(cacheKey);
         if (cacheResult != null)
@@ -34,7 +44,7 @@ public class GetList : IEndpoint
             lookups = await lookupRepository.GetAllAsync(cancellationToken);
         }
 
-        var result = lookups.Select(x => x.ToDto(apiContext.Culture)).OrderBy(q=> q.Rank).ToList();
+        var result = lookups.Select(x => x.ToDto(apiContext.Culture)).OrderBy(q => q.Rank).ToList();
         memoryCache.Set(cacheKey, result, TimeSpan.FromHours(1));
         return Results.Ok(result);
     }
