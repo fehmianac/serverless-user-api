@@ -26,7 +26,6 @@ public class UserRepository : DynamoRepository, IUserRepository
     public async Task<bool> DeleteAsync(string userId, CancellationToken cancellationToken = default)
     {
         var response = await base.DeleteAsync("users", userId, cancellationToken);
-        await _eventBusManager.UserDeletedAsync(userId, cancellationToken);
         return response;
     }
 
