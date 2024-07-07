@@ -18,15 +18,6 @@ public class GetList : IEndpoint
         [FromServices] IUserRepository userRepository,
         CancellationToken cancellationToken)
     {
-        var allUsers = await userRepository.GetAllAsync(cancellationToken);
-        var user = allUsers.Where(q => q.CreatedAt > new DateTime(2024,6,19));
-        var phones = user.Select(q => q.Phone);
-        var emails = user.Select(q => q.Email);
-
-        var emailsWithComma = string.Join(',', emails);
-
-        var phoneWithComma = string.Join(',', phones);
-        
         var cacheKey = $"lookup-{type}-{apiContext.Culture}";
         var cacheResult = memoryCache.Get<List<LookupDefinitionDto>>(cacheKey);
         if (cacheResult != null)
